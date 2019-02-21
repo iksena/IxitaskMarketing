@@ -1,0 +1,12 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="@string/preference_key_location"
+        android:summary="Track your location and send the data to Ixitask server"
+        android:title="Enable Location Tracking" />
+    <Preference
+        android:title="Log out"
+        android:key="@string/preference_key_log_out"
+        android:summary="Log out your Ixitask account from this app"/>
+</PreferenceScreen>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#5277ab</color>
+    <color name="colorPrimaryDark">#1e4c7c</color>
+    <color name="colorAccent">#83a6dd</color>
+
+    <color name="lightYellow">#fff59d</color>
+    <color name="paleYellow">#cbc26d</color>
+
+    <color name="bluePending">#00A4FD</color>
+    <color name="greenCompleted">#52AB2A</color>
+    <color name="redCancelled">#CB513C</color>
+    <color name="yellowRescheduled">#F8E32F</color>
+
+    <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
+    <color name="darkGreen">#087f23</color>
+    <color name="transparent">#00000000</color>
+    <color name="background">#f9fafa</color>
+    <color name="lightGrey1">#edeef0</color>
+    <color name="lightGrey2">#dbdcdc</color>
+    <color name="grey1">#c5c6c8</color>
+    <color name="grey2">#abacad</color>
+    <color name="grey3">#8e9193</color>
+    <color name="darkGrey1">#737374</color>
+    <color name="darkGrey2">#525252</color>
+</resources>

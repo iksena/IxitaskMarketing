@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_homepass"
+            android:icon="@drawable/menu_home_grey"
+            android:title="@string/nav_homepass" />
+        <item
+            android:id="@+id/nav_installation"
+            android:icon="@drawable/activity_note_black"
+            android:title="@string/nav_installation" />
+        <item
+            android:id="@+id/nav_summary"
+            android:icon="@drawable/menu_activity_black"
+            android:title="@string/nav_summary" />
+        <item
+            android:id="@+id/nav_summary_homepass"
+            android:icon="@drawable/menu_activity_black"
+            android:visible="false"
+            android:enabled="false"
+            android:title="@string/nav_summary" />
+    </group>
+</menu>
