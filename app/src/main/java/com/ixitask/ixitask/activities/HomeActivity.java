@@ -26,6 +26,7 @@ import com.ixitask.ixitask.R;
 import com.ixitask.ixitask.fragments.ActivityFragment;
 import com.ixitask.ixitask.fragments.HomeSummaryFragment;
 import com.ixitask.ixitask.fragments.HomepassFragment;
+import com.ixitask.ixitask.fragments.InstallDetailFragment;
 import com.ixitask.ixitask.fragments.InstallationFragment;
 import com.ixitask.ixitask.fragments.LogsFragment;
 import com.ixitask.ixitask.fragments.SummaryFragment;
@@ -63,7 +64,8 @@ public class HomeActivity extends AppCompatActivity implements
         LogsFragment.OnLogsInteractionListener,
         InstallationFragment.OnInstallationInteractionListener,
         SummaryFragment.OnSummaryInteractionListener,
-        NavigationView.OnNavigationItemSelectedListener {
+        NavigationView.OnNavigationItemSelectedListener,
+        InstallDetailFragment.OnListFragmentInteractionListener {
 
     private static final String TAG = HomeActivity.class.getSimpleName();
     private String userId;
@@ -72,6 +74,7 @@ public class HomeActivity extends AppCompatActivity implements
     private ResponseHomepass.Homepass homepass;
     private int hpscId;
     private String hpscName;
+    private String serviceId;
     private FusedLocationProviderClient locationProvider;
 
     @BindView(R.id.drawer)
@@ -155,6 +158,9 @@ public class HomeActivity extends AppCompatActivity implements
             } else if (current instanceof HomeSummaryFragment){
                 onChangeFragment(R.id.nav_summary);
                 navigation.setCheckedItem(R.id.nav_summary);
+            } else if (current instanceof InstallDetailFragment){
+                onChangeFragment(R.id.nav_installation);
+                navigation.setCheckedItem(R.id.nav_installation);
             } else {
                 onChangeFragment(R.id.nav_homepass);
                 navigation.setCheckedItem(R.id.nav_homepass);
@@ -329,6 +335,8 @@ public class HomeActivity extends AppCompatActivity implements
                 ((InstallationFragment) current).setView();
             } else if (current instanceof SummaryFragment){
                 ((SummaryFragment) current).setView();
+            } else if (current instanceof InstallDetailFragment){
+                ((InstallDetailFragment) current).setView();
             } else {
                 Log.d(TAG, message);
                 ViewUtils.dialogError(this,"Failed", message).create().show();
@@ -368,6 +376,17 @@ public class HomeActivity extends AppCompatActivity implements
             drawer.openDrawer(GravityCompat.START);
         else
             drawer.closeDrawer(GravityCompat.START);
+    }
+
+    @Override
+    public void onBackClick() {
+        onBackPressed();
+    }
+
+    @Override
+    public void onClick(String serviceId) {
+        this.serviceId = serviceId;
+        onChangeFragment(R.id.nav_install_detail);
     }
 
     @Override
@@ -433,6 +452,8 @@ public class HomeActivity extends AppCompatActivity implements
             case R.id.nav_summary_homepass:
                 fragment = HomeSummaryFragment.newInstance(userId,userKey,hpscId,hpscName);
                 break;
+            case R.id.nav_install_detail:
+                fragment = InstallDetailFragment.newInstance(userId,userKey,serviceId);
         }
         if (fragment!=null) {
             getSupportFragmentManager()
@@ -466,5 +487,12 @@ public class HomeActivity extends AppCompatActivity implements
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
 
+    }
+
+    @Override
+    public void onListFragmentInteraction(String imageUrl) {
+        Intent photoIntent = new Intent(this, PhotoActivity.class);
+        photoIntent.putExtra(Constants.ARG_IMAGE_URL, imageUrl);
+        startActivity(photoIntent);
     }
 }

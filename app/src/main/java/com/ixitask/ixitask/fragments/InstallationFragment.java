@@ -149,7 +149,7 @@ public class InstallationFragment extends Fragment {
                     if (status==200){
                         displayEmptyView(false);
                         List<ResponseInstall.Install> installs = new ArrayList<>(res.data.installs);
-                        adapter = new InstallationAdapter(context, installs);
+                        adapter = new InstallationAdapter(context, installs, mListener);
                         rvInstallation.setAdapter(adapter);
                         textCount.setText(context.getString(R.string.install_count, adapter.getItemCount()));
                     } else {
@@ -234,6 +234,7 @@ public class InstallationFragment extends Fragment {
 
     public interface OnInstallationInteractionListener{
         void openSideNavigation(boolean wantOpen);
+        void onClick(String serviceId);
     }
 
     private void onProgressLoading(boolean isLoading) {

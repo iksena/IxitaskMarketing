@@ -25,13 +25,15 @@ import java.util.List;
 public class InstallationAdapter extends RecyclerView.Adapter<InstallationAdapter.ViewHolder> implements Filterable {
 
     private Context context;
+    private InstallationFragment.OnInstallationInteractionListener mListener;
     private List<ResponseInstall.Install> installs;
     private List<ResponseInstall.Install> installsFiltered;
 
-    public InstallationAdapter(Context context, List<Install> installs) {
+    public InstallationAdapter(Context context, List<Install> installs, InstallationFragment.OnInstallationInteractionListener listener) {
         this.context = context;
         this.installs = installs;
         this.installsFiltered = installs;
+        this.mListener = listener;
         notifyDataSetChanged();
     }
 
@@ -54,6 +56,7 @@ public class InstallationAdapter extends RecyclerView.Adapter<InstallationAdapte
             GradientDrawable background = (GradientDrawable) holder.textStatus.getBackground();
             background.setColor(ContextCompat.getColor(context,getStatusColor(holder.install.sstatus)));
 //            holder.textStatus.setBackgroundColor();
+            holder.itemView.setOnClickListener(v->mListener.onClick(holder.install.serviceid));
         }
     }
 

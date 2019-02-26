@@ -342,25 +342,7 @@ public class RegisterActivity extends AppCompatActivity implements ProductAdapte
         }
         textMonthly.setText(getString(R.string.format_fee, monthlyFee));
         textInstall.setText(getString(R.string.format_fee,installFee));
-        textProrate.setText(getString(R.string.format_fee, countProrate()));
-    }
-
-    private int countProrate(){
-        Calendar now = Calendar.getInstance();
-        Calendar slot = Calendar.getInstance();
-        try {
-            slot.setTime(sdf.parse(dateChosen));
-        } catch (ParseException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Failed to get slot date", Toast.LENGTH_SHORT).show();
-        }
-        Calendar nowMonth = new GregorianCalendar(
-                now.get(Calendar.YEAR),
-                now.get(Calendar.MONTH),
-                now.get(Calendar.DAY_OF_MONTH));
-        int day = now.get(Calendar.DAY_OF_MONTH);
-        int daysInMonth = nowMonth.getActualMaximum(Calendar.DAY_OF_MONTH);
-        return (1 - day/daysInMonth) * monthlyFee;
+        textProrate.setText(getString(R.string.format_fee, ViewUtils.countProrate(this, dateChosen, monthlyFee)));
     }
 
     @Override

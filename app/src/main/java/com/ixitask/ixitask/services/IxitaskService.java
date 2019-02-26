@@ -8,6 +8,7 @@ import com.ixitask.ixitask.models.ResponseCode;
 import com.ixitask.ixitask.models.ResponseHomepass;
 import com.ixitask.ixitask.models.ResponseImage;
 import com.ixitask.ixitask.models.ResponseInstall;
+import com.ixitask.ixitask.models.ResponseInstallDetail;
 import com.ixitask.ixitask.models.ResponseLogin;
 import com.ixitask.ixitask.models.ResponseLogs;
 import com.ixitask.ixitask.models.ResponseProduct;
@@ -149,6 +150,11 @@ public class IxitaskService {
         Call<ResponseImage> getImage(@Query("userid") String userId,
                                      @Query("userkey") String userKey,
                                      @Query("hpid") String hpId);
+
+        @GET("/mega/api/my_install_detail")
+        Call<ResponseInstallDetail> getInstallDetail(@Query("userid") String userId,
+                                             @Query("userkey") String userKey,
+                                             @Query("serviceid") String serviceId);
 
     }
 

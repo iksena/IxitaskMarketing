@@ -18,6 +18,8 @@ public class Constants {
     public static final String ARG_HP_OPEN = "homepassOpen";
     public static final String ARG_HPSC_ID = "homepassSummaryCodeId";
     public static final String ARG_HPSC_NAME = "homepassSummaryCodeName";
+    public static final String ARG_SERVICE_ID = "installDetailServiceId";
+    public static final String ARG_IMAGE_URL = "installDetailImageURL";
 
     public static final String ARG_HP_IMAGE= "homepassPictureBase64";
     public static final String ARG_HP_IMAGE_URI= "homepassPictureUri";

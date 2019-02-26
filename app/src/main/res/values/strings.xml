@@ -118,5 +118,12 @@
     <string name="error_failed_slot">Failed getting slots %s</string>
     <string name="error_failed_register">Failed to submit installation data %s</string>
     <string name="error_failed_product">Failed getting products  %s</string>
+    <string name="install_detail_title">Register Detail</string>
+    <string name="install_detail_owner">%s\n%s\n%s</string>
+    <string name="install_detail_product">Product</string>
+    <string name="install_detail_loc">Install Location</string>
+    <string name="install_detail_latlng">Latitude: %s\nLongitude: %s</string>
+    <string name="install_detail_photos">Location Photos</string>
+    <string name="failed_install_detail">Failed getting installation data %s</string>
 
 </resources>
