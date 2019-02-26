@@ -133,7 +133,7 @@ public class HomepassFragment extends Fragment {
         editSearch.getText().clear();
         editSearch.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
         loadHomepasses();
-        //TODO implement live search if needed
+        //TO DO implement live search if needed
 //        editSearch.addTextChangedListener(new TextWatcher() {
 //            @Override
 //            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}

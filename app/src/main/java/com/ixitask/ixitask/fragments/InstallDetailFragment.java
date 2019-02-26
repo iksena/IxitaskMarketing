@@ -1,5 +1,6 @@
 package com.ixitask.ixitask.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -26,7 +27,17 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.ixitask.ixitask.R;
 import com.ixitask.ixitask.activities.SettingsActivity;
 import com.ixitask.ixitask.models.ResponseInstallDetail;
@@ -37,16 +48,21 @@ import com.ixitask.ixitask.utils.ViewUtils;
 
 import java.util.List;
 
-public class InstallDetailFragment extends Fragment {
+import static com.ixitask.ixitask.utils.PermissionUtils.isPermissionGranted;
+
+public class InstallDetailFragment extends Fragment{
 
     private static final String TAG = InstallDetailFragment.class.getSimpleName();
     private OnListFragmentInteractionListener mListener;
     private Context context;
+    private GoogleMap map;
     private AlertDialog dialog;
     private PicsInstallDetailAdapter adapter;
     private String userId;
     private String userKey;
     private String serviceId;
+    private double lat;
+    private double lng;
 
     @BindView(R.id.text_date)
     TextView textDate;
@@ -62,6 +78,8 @@ public class InstallDetailFragment extends Fragment {
     TextView textInstall;
     @BindView(R.id.text_location)
     TextView textLocation;
+    @BindView(R.id.map_view)
+    MapView mapView;
     @BindView(R.id.rv_photos)
     RecyclerView rvPhotos;
     @BindView(R.id.text_empty)
@@ -102,9 +120,40 @@ public class InstallDetailFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        mapView.onResume();
         if (mListener==null){
             mListener = (OnListFragmentInteractionListener) requireContext();
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mapView.onPause();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mapView.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mapView.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mapView.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mapView.onLowMemory();
     }
 
     @Override
@@ -119,6 +168,8 @@ public class InstallDetailFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_install_detail, container, false);
         ButterKnife.bind(this, view);
 //            recyclerView.setLayoutManager(new GridLayoutManager(context, 2));
+        mapView.onCreate(savedInstanceState);
+//        mapView.getMapAsync(this);
         setView();
         swipe.setOnRefreshListener(this::setView);
         return view;
@@ -173,6 +224,10 @@ public class InstallDetailFragment extends Fragment {
                             textInstall.setText(context.getString(R.string.format_fee, data.getInstallfee()));
                             textProrate.setText(context.getString(R.string.format_fee, data.getProrate()));
                             textLocation.setText(context.getString(R.string.install_detail_latlng,data.getLattitude(),data.getLongitude()));
+                            double lat = Double.parseDouble(data.getLattitude());
+                            double lng = Double.parseDouble(data.getLongitude());
+                            LatLng latLng = new LatLng(lat, lng);
+                            mapView.getMapAsync(googleMap -> setMapMarker(googleMap,latLng));
                             List<ResponseInstallDetail.Pic> pics = data.getPics();
                             if (pics!=null && !pics.isEmpty()){
                                 displayEmptyView(false);
@@ -246,6 +301,26 @@ public class InstallDetailFragment extends Fragment {
     private void onProgressLoading(boolean isLoading) {
         swipe.post(()->swipe.setRefreshing(isLoading));
 //        if (isLoading) ViewUtils.hideKeyboard(context, editSearch);
+    }
+
+    @SuppressLint("MissingPermission")
+    private void setMapMarker(GoogleMap map, LatLng latLng){
+        if (getActivity()!=null) {
+            if (isPermissionGranted(context, getActivity(), PermissionUtils.allPermissions))
+                map.setMyLocationEnabled(true);
+            try {
+                MapsInitializer.initialize(getActivity());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (map!=null) {
+            map.getUiSettings().setZoomControlsEnabled(true);
+            map.addMarker(new MarkerOptions().position(latLng));
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 10);
+            map.animateCamera(cameraUpdate);
+        } else
+            Toast.makeText(context, "Map is not working. Please refresh.", Toast.LENGTH_SHORT).show();
     }
 
     public interface OnListFragmentInteractionListener {

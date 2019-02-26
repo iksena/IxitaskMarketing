@@ -124,15 +124,15 @@ public class HomeActivity extends AppCompatActivity implements
         checkUserValidity();
         handleLocationUpdate();
 
-        //TODO expiration time bomb
-        Calendar expirationDate = Calendar.getInstance();
-        expirationDate.set(2019, Calendar.FEBRUARY , 28);
-        if (Calendar.getInstance().compareTo(expirationDate) > 0) {
-            Toast.makeText(this,
-                    "Your testing session has expired. Please contact the developer.",
-                    Toast.LENGTH_SHORT).show();
-            finish();
-        }
+        //TO DO expiration time bomb
+//        Calendar expirationDate = Calendar.getInstance();
+//        expirationDate.set(2019, Calendar.FEBRUARY , 28);
+//        if (Calendar.getInstance().compareTo(expirationDate) > 0) {
+//            Toast.makeText(this,
+//                    "Your testing session has expired. Please contact the developer.",
+//                    Toast.LENGTH_SHORT).show();
+//            finish();
+//        }
     }
 
     @Override
