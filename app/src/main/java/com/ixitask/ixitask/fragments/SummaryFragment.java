@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ixitask.ixitask.R;
 import com.ixitask.ixitask.activities.SettingsActivity;
@@ -107,6 +108,7 @@ public class SummaryFragment extends Fragment {
     }
 
     public void setView(){
+        onProgressLoading(false);
         rvSummaries.setLayoutManager(new LinearLayoutManager(context));
         loadSummaries();
         textName.setText(username);
@@ -115,70 +117,79 @@ public class SummaryFragment extends Fragment {
     }
 
     private void loadSummaries(){
-        onProgressLoading(true);
-        IxitaskService.getApi().getSummaries(userId, userKey).enqueue(new Callback<ResponseSummary>() {
-            @Override
-            public void onResponse(Call<ResponseSummary> call, Response<ResponseSummary> response) {
-                onProgressLoading(false);
-                displayEmptyView(true);
-                ResponseSummary res = response.body();
-                if (res!=null){
-                    int status = Integer.parseInt(res.status);
-                    Log.d(TAG, res.statusMessage);
-                    if (status==200){
-                        displayEmptyView(false);
-                        List<ResponseSummary.Summary> summaries = new ArrayList<>(res.data.summaries);
-                        adapter = new SummaryAdapter(summaries, mListener);
-                        rvSummaries.setAdapter(adapter);
+        //TO DO A3 add gps disabled failure
+        if (PermissionUtils.isLocationTrackingEnabled(context)) {
+            onProgressLoading(true);
+            textEmpty.setText(R.string.summaries_empty);
+            IxitaskService.getApi().getSummaries(userId, userKey).enqueue(new Callback<ResponseSummary>() {
+                @Override
+                public void onResponse(Call<ResponseSummary> call, Response<ResponseSummary> response) {
+                    onProgressLoading(false);
+                    displayEmptyView(true);
+                    ResponseSummary res = response.body();
+                    if (res != null) {
+                        int status = Integer.parseInt(res.status);
+                        Log.d(TAG, res.statusMessage);
+                        if (status == 200) {
+                            displayEmptyView(false);
+                            List<ResponseSummary.Summary> summaries = new ArrayList<>(res.data.summaries);
+                            adapter = new SummaryAdapter(summaries, mListener);
+                            rvSummaries.setAdapter(adapter);
+                        } else {
+                            if (context != null) {
+                                if (dialog != null) dialog.dismiss();
+                                dialog = ViewUtils
+                                        .dialogError(context, res.status, res.statusMessage)
+                                        .setPositiveButton(R.string.btn_retry,
+                                                (d, w) -> call.clone().enqueue(this))
+                                        .create();
+                                dialog.show();
+                            }
+                        }
                     } else {
-                        if (context!=null){
-                            if (dialog!=null) dialog.dismiss();
-                            dialog = ViewUtils
-                                    .dialogError(context, res.status, res.statusMessage)
-                                    .setPositiveButton(R.string.btn_retry,
-                                            (d, w) -> call.clone().enqueue(this))
+                        String message = context.getString(R.string.error_no_response);
+                        Log.d(TAG, message);
+                        Log.d(TAG, call.request().toString());
+                        if (context != null) {
+                            if (dialog != null) dialog.dismiss();
+                            dialog = ViewUtils.dialogError(context, "Failed", message)
+                                    .setPositiveButton(context.getString(R.string.btn_retry), (d, w) -> call.clone().enqueue(this))
                                     .create();
                             dialog.show();
                         }
                     }
-                } else {
-                    String message = context.getString(R.string.error_no_response);
-                    Log.d(TAG, message);
+                }
+
+                @Override
+                public void onFailure(Call<ResponseSummary> call, Throwable t) {
+                    onProgressLoading(false);
+                    displayEmptyView(true);
+                    String message = context.getString(R.string.error_failed_summary);
                     Log.d(TAG, call.request().toString());
-                    if (context!=null) {
-                        if (dialog!=null) dialog.dismiss();
-                        dialog = ViewUtils.dialogError(context, "Failed", message)
-                                .setPositiveButton(context.getString(R.string.btn_retry), (d, w) -> call.clone().enqueue(this))
-                                .create();
+                    t.printStackTrace();
+                    if (context != null) {
+                        if (dialog != null) dialog.dismiss();
+                        if (!PermissionUtils.isNetworkAvailable(context))
+                            dialog = ViewUtils.dialogError(context, "Failed",
+                                    context.getString(R.string.error_no_internet))
+                                    .setPositiveButton(context.getString(R.string.btn_retry),
+                                            (d, w) -> call.clone().enqueue(this))
+                                    .create();
+                        else
+                            dialog = ViewUtils.dialogError(context, "Failed",
+                                    String.format(message, t.getMessage()))
+                                    .setPositiveButton(context.getString(R.string.btn_retry), (d, w) -> call.clone().enqueue(this))
+                                    .create();
                         dialog.show();
                     }
                 }
-            }
-
-            @Override
-            public void onFailure(Call<ResponseSummary> call, Throwable t) {
-                onProgressLoading(false);
-                displayEmptyView(true);
-                String message = context.getString(R.string.error_failed_summary);
-                Log.d(TAG, call.request().toString());
-                t.printStackTrace();
-                if (context!=null) {
-                    if (dialog!=null) dialog.dismiss();
-                    if (!PermissionUtils.isNetworkAvailable(context))
-                        dialog = ViewUtils.dialogError(context, "Failed",
-                                context.getString(R.string.error_no_internet))
-                                .setPositiveButton(context.getString(R.string.btn_retry),
-                                        (d, w) -> call.clone().enqueue(this))
-                                .create();
-                    else
-                        dialog = ViewUtils.dialogError(context, "Failed",
-                                String.format(message, t.getMessage()))
-                                .setPositiveButton(context.getString(R.string.btn_retry), (d, w) -> call.clone().enqueue(this))
-                                .create();
-                    dialog.show();
-                }
-            }
-        });
+            });
+        } else {
+            Toast.makeText(context, "Aktifkan fitur location tracking dan GPS", Toast.LENGTH_SHORT).show();
+            textEmpty.setText(R.string.empty_location_tracking);
+            displayEmptyView(true);
+            startActivity(new Intent(context, SettingsActivity.class));
+        }
     }
 
     /**

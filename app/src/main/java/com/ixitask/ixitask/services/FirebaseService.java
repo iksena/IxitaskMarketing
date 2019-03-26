@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -40,24 +41,26 @@ public class FirebaseService extends FirebaseMessagingService {
     @Override
     public void onNewToken(String s) {
         super.onNewToken(s);
-        Log.d(TAG, "token = "+s);
+        Log.i(TAG, "token = "+s);
         SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        sPrefs.edit().putString(Constants.ARG_FIREBASE, s).apply();
         String userId = sPrefs.getString(Constants.ARG_USER_ID,"");
         String userKey = sPrefs.getString(Constants.ARG_USER_ID,"");
-        IxitaskService.getApi().updateToken(userId,userKey,s).enqueue(new Callback<ResponseUpdate>() {
-            @Override
-            public void onResponse(Call<ResponseUpdate> call, Response<ResponseUpdate> response) {
-                ResponseUpdate res = response.body();
-                if (res != null)
-                    Log.d(TAG, res.getStatus()+": "+res.getStatusMessage());
-            }
+        if (!TextUtils.isEmpty(userId) || !TextUtils.isEmpty(userKey)) {
+            sPrefs.edit().putString(Constants.ARG_FIREBASE, s).apply();
+            IxitaskService.getApi().updateToken(userId, userKey, s).enqueue(new Callback<ResponseUpdate>() {
+                @Override
+                public void onResponse(Call<ResponseUpdate> call, Response<ResponseUpdate> response) {
+                    ResponseUpdate res = response.body();
+                    if (res != null)
+                        Log.d(TAG, res.getStatus() + ": " + res.getStatusMessage());
+                }
 
-            @Override
-            public void onFailure(Call<ResponseUpdate> call, Throwable t) {
-                t.printStackTrace();
-            }
-        });
+                @Override
+                public void onFailure(Call<ResponseUpdate> call, Throwable t) {
+                    t.printStackTrace();
+                }
+            });
+        }
     }
 
     @Override
@@ -88,7 +91,7 @@ public class FirebaseService extends FirebaseMessagingService {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "channel_id")
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "ixitaskChannelId")
                 .setContentTitle(notification.getTitle())
                 .setContentText(notification.getBody())
                 .setAutoCancel(true)
@@ -119,9 +122,9 @@ public class FirebaseService extends FirebaseMessagingService {
         // Notification Channel is required for Android O and above
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
-                    "channel_id", "channel_name", NotificationManager.IMPORTANCE_DEFAULT
+                    "ixitaskChannelId", "Ixitask", NotificationManager.IMPORTANCE_DEFAULT
             );
-            channel.setDescription("channel description");
+            channel.setDescription("MyMegaTeam Notification");
             channel.setShowBadge(true);
             channel.canShowBadge();
             channel.enableLights(true);

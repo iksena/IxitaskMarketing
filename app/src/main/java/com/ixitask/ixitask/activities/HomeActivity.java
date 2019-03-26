@@ -104,6 +104,8 @@ public class HomeActivity extends AppCompatActivity implements
         locationProvider = LocationServices.getFusedLocationProviderClient(this);
         navigation.setCheckedItem(R.id.nav_homepass);
         onChangeFragment(R.id.nav_homepass);
+
+
     }
 
     @Override
@@ -116,6 +118,7 @@ public class HomeActivity extends AppCompatActivity implements
             .putString(Constants.ARG_USER_KEY, userKey)
             .putString(Constants.ARG_USERNAME, username)
             .apply();
+        refreshFragment();
     }
 
     @Override
@@ -196,52 +199,54 @@ public class HomeActivity extends AppCompatActivity implements
         if (TextUtils.isEmpty(userId) || TextUtils.isEmpty(userKey)) {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
-        }
-        String firebaseToken = sPrefs.getString("firebaseToken","");
-        if (TextUtils.isEmpty(firebaseToken))
-            FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    if (task.getResult()!=null) {
-                        String token = task.getResult().getToken();
-                        Log.d(TAG, "token = "+token);
-                        sPrefs.edit().putString(Constants.ARG_FIREBASE, token).apply();
-                        IxitaskService.getApi().updateToken(userId,userKey,token).enqueue(new Callback<ResponseUpdate>() {
-                            @Override
-                            public void onResponse(Call<ResponseUpdate> call, Response<ResponseUpdate> response) {
-                                ResponseUpdate res = response.body();
-                                if (res != null)
-                                    Log.d(TAG, res.getStatus()+": "+res.getStatusMessage());
-                                else {
-                                    ViewUtils.dialogError(HomeActivity.this, "Failed",
-                                            "Cannot send device token to server")
-                                            .setPositiveButton(getString(R.string.btn_retry),
-                                                    (d, w) -> call.clone().enqueue(this))
-                                            .create().show();
+        } else {
+            String firebaseToken = sPrefs.getString(Constants.ARG_FIREBASE, "");
+            if (TextUtils.isEmpty(firebaseToken)) {
+                FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        if (task.getResult() != null) {
+                            String token = task.getResult().getToken();
+                            Log.d(TAG, "token = " + token);
+                            sPrefs.edit().putString(Constants.ARG_FIREBASE, token).apply();
+                            IxitaskService.getApi().updateToken(userId, userKey, token).enqueue(new Callback<ResponseUpdate>() {
+                                @Override
+                                public void onResponse(Call<ResponseUpdate> call, Response<ResponseUpdate> response) {
+                                    ResponseUpdate res = response.body();
+                                    if (res != null) {
+                                        Log.d(TAG, res.getStatus() + ": " + res.getStatusMessage());
+                                    } else {
+                                        ViewUtils.dialogError(HomeActivity.this, "Failed",
+                                                "Cannot send device token to server")
+                                                .setPositiveButton(getString(R.string.btn_retry),
+                                                        (d, w) -> call.clone().enqueue(this))
+                                                .create().show();
+                                    }
                                 }
-                            }
 
-                            @Override
-                            public void onFailure(Call<ResponseUpdate> call, Throwable t) {
-                                t.printStackTrace();
-                                if (!PermissionUtils.isNetworkAvailable(HomeActivity.this))
-                                    ViewUtils.dialogError(HomeActivity.this, "Failed",
-                                            getString(R.string.error_no_internet))
-                                            .setPositiveButton(getString(R.string.btn_retry),
-                                                    (d, w) -> call.clone().enqueue(this))
-                                            .create().show();
-                                else
-                                    ViewUtils.dialogError(HomeActivity.this, "Failed",
-                                            "Cannot send device token to server")
-                                            .setPositiveButton(getString(R.string.btn_retry),
-                                                    (d, w) -> call.clone().enqueue(this))
-                                            .create().show();
-                            }
-                        });
+                                @Override
+                                public void onFailure(Call<ResponseUpdate> call, Throwable t) {
+                                    t.printStackTrace();
+                                    if (!PermissionUtils.isNetworkAvailable(HomeActivity.this))
+                                        ViewUtils.dialogError(HomeActivity.this, "Failed",
+                                                getString(R.string.error_no_internet))
+                                                .setPositiveButton(getString(R.string.btn_retry),
+                                                        (d, w) -> call.clone().enqueue(this))
+                                                .create().show();
+                                    else
+                                        ViewUtils.dialogError(HomeActivity.this, "Failed",
+                                                "Cannot send device token to server")
+                                                .setPositiveButton(getString(R.string.btn_retry),
+                                                        (d, w) -> call.clone().enqueue(this))
+                                                .create().show();
+                                }
+                            });
+                        } else
+                            Log.d(TAG, "Failed retrieving Firebase token", task.getException());
                     } else
                         Log.d(TAG, "Failed retrieving Firebase token", task.getException());
-                } else
-                    Log.d(TAG, "Failed retrieving Firebase token", task.getException());
-            });
+                });
+            }
+        }
     }
 
     /**
@@ -337,6 +342,8 @@ public class HomeActivity extends AppCompatActivity implements
                 ((SummaryFragment) current).setView();
             } else if (current instanceof InstallDetailFragment){
                 ((InstallDetailFragment) current).setView();
+            } else if (current instanceof HomeSummaryFragment){
+                ((HomeSummaryFragment) current).setView();
             } else {
                 Log.d(TAG, message);
                 ViewUtils.dialogError(this,"Failed", message).create().show();

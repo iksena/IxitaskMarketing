@@ -16,10 +16,11 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
+        android:usesCleartextTraffic="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".activities.PhotoActivity"></activity>
+        <activity android:name=".activities.PhotoActivity"/>
         <activity
             android:name=".activities.MarkActivity"
             android:screenOrientation="portrait"

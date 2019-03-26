@@ -72,6 +72,7 @@
     <string name="preference_key_log_out">log_out</string>
     <string name="prompt_log_out">Are you sure you want to log out?</string>
     <string name="homepass_empty">No homepass loaded. Please swipe down to refresh and load homepass properly.</string>
+    <string name="install_empty">No installation loaded. Please swipe down to refresh and load installation properly.</string>
     <string name="logs_empty">No logs loaded. Make sure you have selected a homepass. Please swipe down to refresh and load logs properly.</string>
     <string name="summaries_empty">No summaries loaded. Please swipe down to refresh and load summaries properly.</string>
     <string name="slots_empty">No slots available. Please swipe down to refresh or select another date.</string>
@@ -125,5 +126,6 @@
     <string name="install_detail_latlng">Latitude: %s\nLongitude: %s</string>
     <string name="install_detail_photos">Location Photos</string>
     <string name="failed_install_detail">Failed getting installation data %s</string>
+    <string name="empty_location_tracking">Harap mengaktifkan fitur location tracking di menu settings pada aplikasi ini dan menyalakan GPS pada device Anda terlebih dahulu.\nSetelah itu, lakukan refresh dengan gestur scroll ke bawah untuk memuat data.</string>
 
 </resources>

@@ -25,6 +25,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ixitask.ixitask.R;
 import com.ixitask.ixitask.activities.SettingsActivity;
@@ -114,6 +115,7 @@ public class InstallationFragment extends Fragment {
     }
 
     public void setView(){
+        onProgressLoading(false);
         rvInstallation.setLayoutManager(new LinearLayoutManager(context));
         editSearch.getText().clear();
         editSearch.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
@@ -136,71 +138,80 @@ public class InstallationFragment extends Fragment {
     }
 
     private void loadInstallations(){
-        onProgressLoading(true);
-        IxitaskService.getApi().getInstallation(userId, userKey).enqueue(new Callback<ResponseInstall>() {
-            @Override
-            public void onResponse(Call<ResponseInstall> call, Response<ResponseInstall> response) {
-                ResponseInstall res = response.body();
-                displayEmptyView(true);
-                onProgressLoading(false);
-                if (res!=null){
-                    int status = Integer.parseInt(res.status);
-                    Log.d(TAG, res.statusMessage);
-                    if (status==200){
-                        displayEmptyView(false);
-                        List<ResponseInstall.Install> installs = new ArrayList<>(res.data.installs);
-                        adapter = new InstallationAdapter(context, installs, mListener);
-                        rvInstallation.setAdapter(adapter);
-                        textCount.setText(context.getString(R.string.install_count, adapter.getItemCount()));
+        //TO DO A2 add gps disabled failure
+        if (PermissionUtils.isLocationTrackingEnabled(context)) {
+            onProgressLoading(true);
+            textEmpty.setText(R.string.install_empty);
+            IxitaskService.getApi().getInstallation(userId, userKey).enqueue(new Callback<ResponseInstall>() {
+                @Override
+                public void onResponse(Call<ResponseInstall> call, Response<ResponseInstall> response) {
+                    ResponseInstall res = response.body();
+                    displayEmptyView(true);
+                    onProgressLoading(false);
+                    if (res != null) {
+                        int status = Integer.parseInt(res.status);
+                        Log.d(TAG, res.statusMessage);
+                        if (status == 200) {
+                            displayEmptyView(false);
+                            List<ResponseInstall.Install> installs = new ArrayList<>(res.data.installs);
+                            adapter = new InstallationAdapter(context, installs, mListener);
+                            rvInstallation.setAdapter(adapter);
+                            textCount.setText(context.getString(R.string.install_count, adapter.getItemCount()));
+                        } else {
+                            if (context != null) {
+                                if (dialog != null) dialog.dismiss();
+                                dialog = ViewUtils
+                                        .dialogError(context, res.status, res.statusMessage)
+                                        .setPositiveButton(R.string.btn_retry,
+                                                (d, w) -> call.clone().enqueue(this))
+                                        .create();
+                                dialog.show();
+                            }
+                        }
                     } else {
-                        if (context!=null) {
-                            if (dialog!=null) dialog.dismiss();
-                            dialog = ViewUtils
-                                    .dialogError(context, res.status, res.statusMessage)
-                                    .setPositiveButton(R.string.btn_retry,
-                                            (d, w) -> call.clone().enqueue(this))
+                        String message = context.getString(R.string.error_no_response);
+                        Log.d(TAG, message);
+                        Log.d(TAG, call.request().toString());
+                        if (context != null) {
+                            if (dialog != null) dialog.dismiss();
+                            dialog = ViewUtils.dialogError(context, "Failed", message)
+                                    .setPositiveButton(context.getString(R.string.btn_retry), (d, w) -> call.clone().enqueue(this))
                                     .create();
                             dialog.show();
                         }
                     }
-                } else {
-                    String message = context.getString(R.string.error_no_response);
-                    Log.d(TAG, message);
+                }
+
+                @Override
+                public void onFailure(Call<ResponseInstall> call, Throwable t) {
+                    displayEmptyView(true);
+                    onProgressLoading(false);
+                    String message = context.getString(R.string.error_failed_install);
                     Log.d(TAG, call.request().toString());
-                    if (context!=null) {
-                        if (dialog!=null) dialog.dismiss();
-                        dialog = ViewUtils.dialogError(context, "Failed", message)
-                                .setPositiveButton(context.getString(R.string.btn_retry), (d, w) -> call.clone().enqueue(this))
-                                .create();
+                    t.printStackTrace();
+                    if (context != null) {
+                        if (dialog != null) dialog.dismiss();
+                        if (!PermissionUtils.isNetworkAvailable(context))
+                            dialog = ViewUtils.dialogError(context, "Failed",
+                                    context.getString(R.string.error_no_internet))
+                                    .setPositiveButton(context.getString(R.string.btn_retry),
+                                            (d, w) -> call.clone().enqueue(this))
+                                    .create();
+                        else
+                            dialog = ViewUtils.dialogError(context, "Failed",
+                                    String.format(message, t.getMessage()))
+                                    .setPositiveButton(context.getString(R.string.btn_retry), (d, w) -> call.clone().enqueue(this))
+                                    .create();
                         dialog.show();
                     }
                 }
-            }
-
-            @Override
-            public void onFailure(Call<ResponseInstall> call, Throwable t) {
-                displayEmptyView(true);
-                onProgressLoading(false);
-                String message = context.getString(R.string.error_failed_install);
-                Log.d(TAG, call.request().toString());
-                t.printStackTrace();
-                if (context!=null) {
-                    if (dialog!=null) dialog.dismiss();
-                    if (!PermissionUtils.isNetworkAvailable(context))
-                        dialog = ViewUtils.dialogError(context, "Failed",
-                                context.getString(R.string.error_no_internet))
-                                .setPositiveButton(context.getString(R.string.btn_retry),
-                                        (d, w) -> call.clone().enqueue(this))
-                                .create();
-                    else
-                        dialog = ViewUtils.dialogError(context, "Failed",
-                                String.format(message, t.getMessage()))
-                                .setPositiveButton(context.getString(R.string.btn_retry), (d, w) -> call.clone().enqueue(this))
-                                .create();
-                    dialog.show();
-                }
-            }
-        });
+            });
+        } else {
+            Toast.makeText(context, "Aktifkan fitur location tracking dan GPS", Toast.LENGTH_SHORT).show();
+            textEmpty.setText(R.string.empty_location_tracking);
+            displayEmptyView(true);
+            startActivity(new Intent(context, SettingsActivity.class));
+        }
     }
 
     /**

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
@@ -13,6 +14,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.ixitask.ixitask.R;
 import com.ixitask.ixitask.activities.LoginActivity;
 import com.ixitask.ixitask.models.ResponseUpdate;
 import com.ixitask.ixitask.services.IxitaskService;
@@ -59,5 +61,13 @@ public class PermissionUtils {
                 = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    public static boolean isLocationTrackingEnabled(Context context){
+        SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean isSettingEnabled = sPrefs.getBoolean(context.getString(R.string.preference_key_location), false);
+        LocationManager manager = (LocationManager) context.getSystemService( Context.LOCATION_SERVICE );
+        boolean isGPSEnabled = manager.isProviderEnabled( LocationManager.GPS_PROVIDER);
+        return isSettingEnabled && isGPSEnabled;
     }
 }
